@@ -1,4 +1,4 @@
-package com.api_call.config;
+package com.apicall.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

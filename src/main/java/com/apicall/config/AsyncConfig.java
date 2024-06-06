@@ -1,4 +1,4 @@
-package com.api_call.config;
+package com.apicall.config;
 
 import java.util.concurrent.Executor;
 
