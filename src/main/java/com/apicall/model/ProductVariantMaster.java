@@ -21,7 +21,7 @@ import lombok.ToString;
 @Entity
 @Table(name = ProductVariantMaster.TABLE_NAME)
 @ToString
-@NamedStoredProcedureQuery(name = "update_product_in_thread", procedureName = "update_product_in_thread")
+@NamedStoredProcedureQuery(name = "product_variant_thread", procedureName = "product_variant_thread")
 public class ProductVariantMaster {
 
 	public static final String TABLE_NAME = "daily_sync_product_variants";

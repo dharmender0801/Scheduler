@@ -9,8 +9,8 @@ import com.apicall.model.ProductVariantMaster;
 
 public interface ProductVariantRespository extends JpaRepository<ProductVariantMaster, Long> {
 
-	@Procedure(name = "CALL update_product_in_thread")
-	void update_product_in_thread();
+	@Procedure(name = "CALL product_variant_thread")
+	void product_variant_thread();
 
 	List<ProductVariantMaster> findByUserIdAndThreadIdAndStatus(Long userId, Long threadNo, boolean b);
 }
