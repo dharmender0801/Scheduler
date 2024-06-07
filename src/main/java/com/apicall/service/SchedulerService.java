@@ -19,6 +19,7 @@ import com.apicall.respository.UserMasterRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class SchedulerService {
 
 	@Autowired
@@ -47,11 +48,13 @@ public class SchedulerService {
 		String Url = "https://api.asindataapi.com/request?api_key=72E0DC05F3BF49DA8CA967786650063D&type=product&url="
 				+ n.getProductLink();
 		ResponseDto responseDto = restTemplate.getForObject(Url, ResponseDto.class);
+		log.info("Amazon Response : {}", responseDto);
 		if (Boolean.TRUE.equals(Objects.nonNull(responseDto))
 				&& Boolean.TRUE.equals(Objects.nonNull(responseDto.getProduct()))
 				&& Boolean.TRUE.equals(Objects.nonNull(responseDto.getProduct().getBuyboxWinner()))) {
 			graphQlService.PushToGraphQl(responseDto.getProduct().getBuyboxWinner(), n, userMaster);
-
+			userMaster.setLastRunDate(new Date());
+			masterRepository.save(userMaster);
 			n.setStatus(false);
 			productVariantRespository.save(n);
 		}

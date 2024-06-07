@@ -10,10 +10,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class GraphQlDto {
+	
+	private String query;
+	private Variables variables;
 
-	private String productId;
-	private List<Variants> variants;
-	private Input input;
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Data
+	public static class Variables {
+		private String productId;
+		private List<Variants> variants;
+		private Input input;
+	}
 
 	@AllArgsConstructor
 	@NoArgsConstructor

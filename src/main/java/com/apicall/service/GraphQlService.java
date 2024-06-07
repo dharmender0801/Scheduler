@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import com.apicall.dto.GraphQlDto;
 import com.apicall.dto.GraphQlDto.Input;
 import com.apicall.dto.GraphQlDto.Quantities;
+import com.apicall.dto.GraphQlDto.Variables;
 import com.apicall.dto.GraphQlDto.Variants;
 import com.apicall.dto.ResponseDto.Product.buyBoxWinner;
 import com.apicall.dto.ResponseDto.Product.buyBoxWinner.Availability;
@@ -35,37 +36,48 @@ public class GraphQlService {
 	RestTemplate restTemplate;
 
 	public void PushToGraphQl(buyBoxWinner buyboxWinner, ProductVariantMaster n, UserMaster userMaster) {
-		log.info("Buy Box Winner : {} , Product Variant Master : {},User Master : {}", buyboxWinner, n, userMaster);
+//		log.info("Buy Box Winner : {} , Product Variant Master : {},User Master : {}", buyboxWinner, n, userMaster);
 		GraphQlDto graphQlDto = new GraphQlDto();
-		graphQlDto.setProductId("gid://shopify/Product/" + n.getShopifyProductId());
+		String query = "mutation batchProductUpdates( $productId: ID!, $variants: "
+				+ "[ProductVariantsBulkInput!]!, $input: InventorySetOnHandQuantitiesInput! ) "
+				+ "{ productVariantsBulkUpdate( productId: $productId, variants: $variants )"
+				+ " { product { id } userErrors { field message } } inventorySetOnHandQuantities(input: $input) "
+				+ "{ inventoryAdjustmentGroup { id } userErrors { field message } } }";
+		graphQlDto.setQuery(query);
+		Variables variables = new Variables();
+		variables.setProductId("gid://shopify/Product/" + n.getShopifyProductId());
 		if (Boolean.TRUE.equals(Objects.nonNull(buyboxWinner.getPrice()))) {
 			List<Variants> variants = getVariantList(buyboxWinner, n);
-			graphQlDto.setVariants(variants);
+			variables.setVariants(variants);
 		}
 		if (Boolean.TRUE.equals(Objects.nonNull(buyboxWinner.getAvailability()))) {
 			List<Quantities> quantities = getQuantityList(buyboxWinner.getAvailability(), userMaster, n);
 			Input input = new Input();
 			input.setReason("correction");
 			input.setSetQuantities(quantities);
-			graphQlDto.setInput(input);
+			variables.setInput(input);
 		}
-
+		graphQlDto.setVariables(variables);
 		PushingTOGraphQl(graphQlDto, userMaster);
 
 	}
 
 	private void PushingTOGraphQl(GraphQlDto graphQlDto, UserMaster userMaster) {
-		String graphQlUrl = "https://prime-japan.myshopify.com/admin/api/2024-01/graphql.json";
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("X-Shopify-Access-Token", userMaster.getToken());
-
-		String requestBody = "{\"query\":\"mutation " + serializeToJson(graphQlDto) + "\"}";
-		log.info("Request Body is sending : {}", requestBody);
-		HttpEntity<GraphQlDto> requestEntity = new HttpEntity<>(graphQlDto, headers);
-		ResponseEntity<String> responseEntity = restTemplate.exchange(graphQlUrl, HttpMethod.POST, requestEntity,
-				String.class);
-		log.info("Response From Graph Ql : {}", responseEntity);
+		try {
+			String graphQlUrl = "https://" + userMaster.getMyshopifyDomain() + "/admin/api/2024-01/graphql.json";
+			log.info("End Point : {}", graphQlUrl);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			headers.set("X-Shopify-Access-Token", userMaster.getToken());
+			headers.set("Accept", "application/json");
+			log.info("Request Body is sending : {}", serializeToJson(graphQlDto));
+			HttpEntity<GraphQlDto> requestEntity = new HttpEntity<>(graphQlDto, headers);
+			ResponseEntity<String> responseEntity = restTemplate.exchange(graphQlUrl, HttpMethod.POST, requestEntity,
+					String.class);
+			log.info("Response From Graph Ql : {}", responseEntity.getBody());
+		} catch (Exception e) {
+			log.error("Exception : {}", e);
+		}
 
 	}
 
