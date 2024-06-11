@@ -50,13 +50,11 @@ public class GraphQlService {
 			List<Variants> variants = getVariantList(buyboxWinner, n);
 			variables.setVariants(variants);
 		}
-		if (Boolean.TRUE.equals(Objects.nonNull(buyboxWinner.getAvailability()))) {
-			List<Quantities> quantities = getQuantityList(buyboxWinner.getAvailability(), userMaster, n);
-			Input input = new Input();
-			input.setReason("correction");
-			input.setSetQuantities(quantities);
-			variables.setInput(input);
-		}
+		List<Quantities> quantities = getQuantityList(buyboxWinner.getAvailability(), userMaster, n);
+		Input input = new Input();
+		input.setReason("correction");
+		input.setSetQuantities(quantities);
+		variables.setInput(input);
 		graphQlDto.setVariables(variables);
 		PushingTOGraphQl(graphQlDto, userMaster);
 
@@ -86,7 +84,7 @@ public class GraphQlService {
 		Quantities quantities2 = new Quantities();
 		quantities2.setInventoryItemId("gid://shopify/InventoryItem/" + n.getInventoryItemId());
 		quantities2.setLocationId("gid://shopify/Location/" + userMaster.getLocationId());
-		quantities2.setQuantity(generateRandomNumber());
+		quantities2.setQuantity(Boolean.TRUE.equals(Objects.nonNull(availability)) ? generateRandomNumber() : 0L);
 		quantities.add(quantities2);
 		return quantities;
 	}

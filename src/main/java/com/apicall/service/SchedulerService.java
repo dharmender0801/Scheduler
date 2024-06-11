@@ -51,17 +51,21 @@ public class SchedulerService {
 		log.info("Amazon Response : {}", responseDto);
 		if (Boolean.TRUE.equals(Objects.nonNull(responseDto))
 				&& Boolean.TRUE.equals(Objects.nonNull(responseDto.getProduct()))
-				&& Boolean.TRUE.equals(Objects.nonNull(responseDto.getProduct().getBuyboxWinner()))) {
+				&& Boolean.TRUE.equals(Objects.nonNull(responseDto.getProduct().getBuyboxWinner()))
+				&& Boolean.TRUE.equals(Objects.nonNull(responseDto.getProduct().getBuyboxWinner().getPrice()))
+
+		) {
 			graphQlService.PushToGraphQl(responseDto.getProduct().getBuyboxWinner(), n, userMaster);
 			userMaster.setLastRunDate(new Date());
 			masterRepository.save(userMaster);
-			n.setStatus(false);
-			productVariantRespository.save(n);
+
 		}
+		n.setStatus(false);
+		productVariantRespository.save(n);
 
 	}
 
-	@Cacheable(value = "id")
+//	@Cacheable(value = "id")
 	public UserMaster getUser(Long id) {
 		return masterRepository.findByIdAndNextRunDate(id, new Date());
 	}
